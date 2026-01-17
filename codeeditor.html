@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Nigga Editor</title>
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Orbitron:wght@700&display=swap');
+
+       :root {
+            --bg-color: #101010;          /* editor background */
+            --text-color: #fefefe;        /* text color */
+            --accent-color: #abe1f3;      /* highlight/selection/etc */
+            --hover-color: #3A3A3A;       /* hover for tabs */
+            --border-color: #2a2a2a;      /* borders */
+            --secondary-bg: #161616;      /* tab background */
+            --secondary-text: #767676;    /* tab text color */
+            --pressed-color: #2a2a2a;     /* tab pressed/selection color */
+        }
+
+
+        html.theme-light {
+            --bg-color: #F5F5F5;
+            --text-color: #000000;
+            --accent-color: #0066CC;
+            --hover-color: #E0E0E0;
+            --border-color: #CCCCCC;
+            --secondary-bg: #FFFFFF;
+            --secondary-text: #666666;
+            --pressed-color: #D0D0D0;
+        }
+
+        html.theme-blue {
+            --bg-color: #1a2f4a;
+            --text-color: #E6F3FF;
+            --accent-color: #66B2FF;
+            --hover-color: #2a4a6f;
+            --border-color: #4a7db8;
+            --secondary-bg: #1e3a5f;
+            --secondary-text: #5a8fb8;
+            --pressed-color: #3a5a7f;
+        }
+
+        html.theme-green {
+            --bg-color: #153f26;
+            --text-color: #E6FFE6;
+            --accent-color: #66FF66;
+            --hover-color: #2a5a3a;
+            --border-color: #4ab84a;
+            --secondary-bg: #1a4a2e;
+            --secondary-text: #5ab85a;
+            --pressed-color: #3a6a4a;
+        }
+
+        html.theme-purple {
+            --bg-color: #3f153f;
+            --text-color: #FFE6FF;
+            --accent-color: #BB66FF;
+            --hover-color: #5a2a5a;
+            --border-color: #b84ab8;
+            --secondary-bg: #4a1a4a;
+            --secondary-text: #b85ab8;
+            --pressed-color: #6a3a6a;
+        }
+
+        html.theme-red {
+            --bg-color: #3f1515;
+            --text-color: #FFE6E6;
+            --accent-color: #FF6666;
+            --hover-color: #5a2a2a;
+            --border-color: #b84a4a;
+            --secondary-bg: #4a1a1a;
+            --secondary-text: #b85a5a;
+            --pressed-color: #6a3a3a;
+        }
+
+        html.theme-dracula {
+            --bg-color: #282a36;
+            --text-color: #f8f8f2;
+            --accent-color: #50fa7b;
+            --hover-color: #44475a;
+            --border-color: #6272a4;
+            --secondary-bg: #21222c;
+            --secondary-text: #6272a4;
+            --pressed-color: #44475a;
+        }
+
+        html.theme-nord {
+            --bg-color: #2e3440;
+            --text-color: #eceff4;
+            --accent-color: #88c0d0;
+            --hover-color: #3b4252;
+            --border-color: #434c5e;
+            --secondary-bg: #3b4252;
+            --secondary-text: #81a1c1;
+            --pressed-color: #434c5e;
+        }
+
+        html.theme-one-dark {
+            --bg-color: #282c34;
+            --text-color: #abb2bf;
+            --accent-color: #61afef;
+            --hover-color: #3e4451;
+            --border-color: #565c64;
+            --secondary-bg: #21252b;
+            --secondary-text: #5c6370;
+            --pressed-color: #3e4451;
+        }
+
+        html.theme-gruvbox {
+            --bg-color: #282828;
+            --text-color: #ebdbb2;
+            --accent-color: #b8bb26;
+            --hover-color: #3c3836;
+            --border-color: #504945;
+            --secondary-bg: #32302f;
+            --secondary-text: #928374;
+            --pressed-color: #3c3836;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            background: var(--bg-color) !important;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'Courier New', monospace;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: var(--bg-color);
+        }
+
+        #tab-bar {
+            background: transparent !important;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px 0 0;
+            gap: 3px;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            transition: border-color 0.3s ease;
+        }
+
+            #tab-bar::-webkit-scrollbar {
+                height: 5px;
+                margin-bottom: 1px;
+            }
+
+            #tab-bar::-webkit-scrollbar-track {
+                background: var(--secondary-bg);
+                border-radius: 3px;
+            }
+
+            #tab-bar::-webkit-scrollbar-thumb {
+                background: var(--secondary-text);
+                border-radius: 3px;
+                min-width: 24px;
+            }
+
+        .tab {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px 0 12px;
+            color: var(--secondary-text);
+            cursor: pointer;
+            background-color: var(--bg-color);
+            border: var(--border-color) 0.5px solid;
+            border-radius: 6px;
+            margin-right: 2px;
+            min-width: 80px;
+            max-width: 160px;
+            user-select: none;
+            font-size: 14px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease-out, background-color 0.2s ease, color 0.2s ease;
+            font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'Courier New', monospace;
+            will-change: transform, opacity;
+        }
+
+            .tab:first-child {
+                margin-left: 10px;
+            }
+
+            .tab.active {
+                background: var(--secondary-bg);
+                color: var(--text-color);
+                border: var(--border-color) 1px solid;
+                z-index: 1;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            .tab:hover {
+                background-color: var(--hover-color);
+                color: var(--text-color);
+            }
+
+        .tab-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tab-close {
+            opacity: 0.125;
+            margin-left: 8px;
+            margin-bottom: 2px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            color: var(--secondary-text);
+            font-size: 14px;
+            position: relative;
+            flex-shrink: 0;
+            will-change: transform, opacity;
+        }
+
+        .tab:hover .tab-close {
+            opacity: 1;
+        }
+
+        .tab-close:hover {
+            color: var(--text-color);
+        }
+
+        .tab-close::before {
+            content: "×";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            line-height: 0;
+        }
+
+        #new-tab-btn {
+            background: transparent;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-text);
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 20px;
+            border-radius: 4px;
+            border: none;
+            margin-bottom: 2px;
+            font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'Courier New', monospace;
+        }
+
+            #new-tab-btn:hover {
+                color: var(--text-color);
+            }
+
+        .context-menu {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            min-width: 120px;
+            animation: fadeIn 0.15s ease-out forwards;
+        }
+
+        .menu-item {
+            padding: 8px 12px;
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'Courier New', monospace;
+            transition: all 0.2s ease;
+        }
+
+            .menu-item:hover {
+                background: var(--hover-color);
+                color: var(--text-color);
+            }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes tabSlideRight {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .tab-fade-out {
+            animation: fadeOut 0.15s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .tab-slide-right {
+            animation: tabSlideRight 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .tab-enter-animate {
+            animation: tabEnter 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes tabEnter {
+            0% {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #container {
+            width: 100%;
+            height: calc(100vh - 40px);
+            background: transparent !important; 
+        }
+
+        .monaco-editor {
+            background: var(--bg-color);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+        }
+
+        .toast {
+            padding: 12px 24px 12px 40px;
+            margin: 8px;
+            border-radius: 4px;
+            color: white;
+            font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateX(50px);
+            filter: blur(8px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+        }
+
+            .toast::before {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 20px;
+                height: 20px;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
+
+            .toast.success::before {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+            }
+
+            .toast.error::before {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z'/%3E%3C/svg%3E");
+            }
+
+            .toast.success {
+                background-color: rgba(34, 197, 94, 0.9);
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            }
+
+            .toast.error {
+                background-color: rgba(239, 68, 68, 0.9);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+            }
+
+            .toast.show {
+                opacity: 1;
+                transform: translateX(0);
+                filter: blur(0);
+            }
+
+            .toast.hide {
+                opacity: 0;
+                transform: translateX(50px);
+                filter: blur(8px);
+            }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <div class="toast-container"></div>
+        <div id="tab-bar">
+            <div id="new-tab-btn">+</div>
+        </div>
+        <div id="container" style="width: 100%; height: calc(100vh - 40px);"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
+    <script type="text/javascript">
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' } });
+
+        let editor, activeTab = null, tabs = [], tabCount = 0, scriptCounter = 1;
+        let saveTimeout = null;
+
+        function updateMonacoTheme() {
+            if (typeof monaco === 'undefined' || typeof monaco.editor === 'undefined') return;
+
+            const computedStyle = getComputedStyle(document.documentElement);
+            const bgColor = computedStyle.getPropertyValue('--bg-color').trim();
+            const textColor = computedStyle.getPropertyValue('--text-color').trim();
+            const secondaryText = computedStyle.getPropertyValue('--secondary-text').trim();
+            const secondaryBg = computedStyle.getPropertyValue('--secondary-bg').trim();
+            const borderColor = computedStyle.getPropertyValue('--border-color').trim();
+            const hoverColor = computedStyle.getPropertyValue('--hover-color').trim();
+            const accentColor = computedStyle.getPropertyValue('--accent-color').trim();
+            const pressedColor = computedStyle.getPropertyValue('--pressed-color').trim();
+            
+            monaco.editor.defineTheme('CustomTheme', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: '', foreground: textColor.substring(1) },
+                    { token: 'keyword', foreground: '#569cd6', fontStyle: 'bold' },
+                    { token: 'string', foreground: accentColor.substring(1) },
+                    { token: 'number', foreground: '#b5cea8' },
+                    { token: 'function', foreground: '#dcdcaa' },
+                    { token: 'support.function', foreground: '#dcdcaa' },
+                    { token: 'variable', foreground: textColor.substring(1) },
+                    { token: 'operator', foreground: textColor.substring(1) },
+                    { token: 'delimiter', foreground: textColor.substring(1) },
+                    { token: 'type', foreground: textColor.substring(1) },
+                    { token: 'constant', foreground: '#b5cea8' },
+                    { token: 'identifier', foreground: textColor.substring(1) },
+                    { token: 'entity.name.function', foreground: '#dcdcaa' },
+                    { token: 'punctuation', foreground: textColor.substring(1) },
+                    { token: 'library', foreground: '#4ec9b0' },
+                    { token: 'constant.language', foreground: '#d8a0df' }
+                ],
+                colors: {
+                    'editor.background': bgColor, 
+                    'editor.foreground': textColor,
+                    'editorLineNumber.foreground': secondaryText,
+                    'editorLineNumber.activeForeground': textColor,
+                    'editorIndentGuide.background': hoverColor,
+                    'editorIndentGuide.activeBackground': accentColor,
+                    'editorSuggestWidget.background': secondaryBg,
+                    'editorSuggestWidget.border': borderColor,
+                    'editorSuggestWidget.foreground': textColor,
+                    'editorSuggestWidget.selectedBackground': hoverColor,
+                    'editorSuggestWidget.highlightForeground': accentColor,
+                    'editor.selectionBackground': '#264f78',
+                    'editor.selectionHighlightBackground': pressedColor,
+                    'scrollbarSlider.background': secondaryBg,
+                    'scrollbarSlider.hoverBackground': hoverColor,
+                    'scrollbarSlider.activeBackground': pressedColor,
+                    'editorCursor.foreground': accentColor
+                }
+            });
+
+            if (editor) {
+                monaco.editor.setTheme('CustomTheme');
+            }
+        }
+
+function applyTheme(themeData) {
+            console.log('Applying theme data:', themeData);
+            const html = document.documentElement;
+
+            html.className = '';
+            html.style.cssText = '';
+            if (typeof themeData === 'string') {
+                if (themeData !== 'default') {
+                    html.classList.add(`theme-${themeData}`);
+                }
+            }
+            else if (typeof themeData === 'object' && themeData.type === 'custom' && themeData.colors) {
+                for (const [key, value] of Object.entries(themeData.colors)) {
+                    html.style.setProperty(key, value);
+                }
+            }
+            
+            updateMonacoTheme();
+        }
+
+        window.applyTheme = applyTheme;
+
+        function showToast(message, type) {
+            const container = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            toast.offsetHeight;
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => container.removeChild(toast), 400);
+            }, 3000);
+        }
+
+        class Tab {
+            constructor(content = `print("Lightning on top!")`, name = `Script ${scriptCounter++}`, id = `tab-${Date.now()}`) {
+                this.id = id;
+                this.name = name;
+                this.content = content;
+                tabCount++;
+                this.number = tabCount;
+                this.element = this.createTabElement();
+            }
+
+            createTabElement() {
+                const tabElement = document.createElement('div');
+                tabElement.className = 'tab tab-enter-animate tab-slide-right';
+                tabElement.innerHTML = `<span class="tab-name">${this.name}</span><span class="tab-close"></span>`;
+                setTimeout(() => {
+                    tabElement.classList.remove('tab-enter-animate', 'tab-slide-right');
+                }, 300);
+
+                const attachEventListeners = () => {
+                    const nameElement = tabElement.querySelector('.tab-name');
+                    const closeElement = tabElement.querySelector('.tab-close');
+                    tabElement.removeEventListener('click', this.tabClickHandler);
+                    tabElement.removeEventListener('contextmenu', this.contextMenuHandler);
+                    nameElement.removeEventListener('dblclick', this.renameHandler);
+                    closeElement.removeEventListener('click', this.closeHandler);
+
+                    this.tabClickHandler = (e) => {
+                        if (!e.target.classList.contains('tab-close')) {
+                            activateTab(this);
+                        }
+                    };
+                    this.contextMenuHandler = (event) => {
+                        event.preventDefault();
+                        document.querySelectorAll('.context-menu').forEach(menu => menu.remove());
+                        const contextMenu = document.createElement('div');
+                        contextMenu.className = 'context-menu';
+                        contextMenu.innerHTML = `
+                                    <div class="menu-item rename-item">Rename</div>
+                                    <div class="menu-item close-item">Close</div>
+                                `;
+                        contextMenu.style.position = 'fixed';
+                        contextMenu.style.left = `${event.clientX}px`;
+                        contextMenu.style.top = `${event.clientY}px`;
+                        document.body.appendChild(contextMenu);
+
+                        contextMenu.querySelector('.rename-item').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            startRenameProcess();
+                            contextMenu.remove();
+                        }, { once: true });
+
+                        contextMenu.querySelector('.close-item').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (tabCount > 1) {
+                                closeTab(this);
+                                tabCount--;
+                            }
+                            contextMenu.remove();
+                        }, { once: true });
+
+                        document.addEventListener('click', () => contextMenu.remove(), { once: true });
+                    };
+                    this.renameHandler = () => startRenameProcess();
+                    this.closeHandler = (event) => {
+                        event.stopPropagation();
+                        if (tabCount > 1) {
+                            closeTab(this);
+                            tabCount--;
+                        }
+                    };
+
+                    nameElement.addEventListener('dblclick', this.renameHandler, { once: false });
+                    tabElement.addEventListener('click', this.tabClickHandler, { once: false });
+                    closeElement.addEventListener('click', this.closeHandler, { once: false });
+                    tabElement.addEventListener('contextmenu', this.contextMenuHandler, { once: false });
+                };
+
+                let renameTimeout = null;
+                const startRenameProcess = () => {
+                    if (renameTimeout) clearTimeout(renameTimeout);
+                    renameTimeout = setTimeout(() => {
+                        const nameElement = tabElement.querySelector('.tab-name');
+                        if (nameElement.tagName === 'INPUT') return;
+                        const inputElement = document.createElement('input');
+                        inputElement.value = this.name;
+                        inputElement.style.cssText = 'width:80px;background:transparent;border:none;color:var(--text-color);outline:none;font-family:"Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace;font-size:14.5px;padding:0;box-sizing:border-box;';
+                        nameElement.replaceWith(inputElement);
+                        inputElement.focus();
+                        inputElement.select();
+
+                        const finishRenaming = () => {
+                            this.name = inputElement.value || 'Untitled';
+                            const newNameElement = document.createElement('span');
+                            newNameElement.className = 'tab-name';
+                            newNameElement.textContent = this.name;
+                            inputElement.replaceWith(newNameElement);
+                            tabElement.style.cssText = '';
+                            attachEventListeners();
+                            
+                        };
+
+                        inputElement.addEventListener('blur', finishRenaming, { once: true });
+                        inputElement.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter') finishRenaming();
+                            if (event.key === 'Escape') {
+                                inputElement.value = this.name;
+                                finishRenaming();
+                            }
+                        }, { once: true });
+                    }, 200);
+                };
+
+                attachEventListeners();
+                return tabElement;
+            }
+        }
+
+        function createNewTab() {
+            const tab = new Tab();
+            tabs.push(tab);
+            const tabBar = document.getElementById('tab-bar');
+            const newTabBtn = document.getElementById('new-tab-btn');
+            tabBar.insertBefore(tab.element, newTabBtn);
+            activateTab(tab);
+            
+            tabBar.scrollLeft = tabBar.scrollWidth;
+        }
+
+        function closeTab(tab) {
+            if (tabs.length <= 1) {
+                showToast('Cannot close the last tab!', 'error');
+                return;
+            }
+            tab.element.classList.add('tab-fade-out');
+            setTimeout(() => {
+                if (!tabs.includes(tab)) return;
+                const tabIndex = tabs.indexOf(tab);
+                if (tabIndex > -1) {
+                    tabs.splice(tabIndex, 1);
+                    tab.element.remove();
+                    if (tab === activeTab) {
+                        activeTab = null;
+                        if (tabs.length > 0) {
+                            const nextTab = tabs[Math.max(0, tabIndex - 1)];
+                            activateTab(nextTab);
+                        } else {
+                            editor.setValue('');
+                        }
+                    }
+                    saveTabsToLocalStorage();
+                }
+            }, 150);
+        }
+
+        let transitionTimeout = null;
+
+        function activateTab(tab) {
+            if (activeTab === tab) return;
+            const editorContainer = document.getElementById('container');
+            if (activeTab) {
+                activeTab.element.classList.remove('active');
+                activeTab.content = editor.getValue();
+                editorContainer.classList.add('tab-transition-out');
+            }
+            if (transitionTimeout) clearTimeout(transitionTimeout);
+            transitionTimeout = setTimeout(() => {
+                editorContainer.classList.remove('tab-transition-out');
+                activeTab = tab;
+                tab.element.classList.add('active');
+                editor.setValue(tab.content);
+                editorContainer.classList.add('tab-transition-in');
+                setTimeout(() => editorContainer.classList.remove('tab-transition-in'), 0);
+            }, 100);
+        }
+
+        function saveTabsToLocalStorage() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const tabData = tabs.map(tab => ({
+                    id: tab.id,
+                    name: tab.name,
+                    content: tab.content
+                }));
+                localStorage.setItem('editorTabs', JSON.stringify(tabData));
+                localStorage.setItem('scriptCounter', scriptCounter.toString());
+            }, 200);
+        }
+
+        function loadTabsFromLocalStorage() {
+            try {
+                const savedTabs = localStorage.getItem('editorTabs');
+                const savedScriptCounter = localStorage.getItem('scriptCounter');
+                if (savedScriptCounter) {
+                    scriptCounter = parseInt(savedScriptCounter) || 1;
+                }
+                if (savedTabs) {
+                    const tabData = JSON.parse(savedTabs);
+                    if (Array.isArray(tabData) && tabData.length > 0) {
+                        tabData.forEach(tab => {
+                            if (tab.id && tab.name && tab.content) {
+                                const newTab = new Tab(tab.content, tab.name, tab.id);
+                                tabs.push(newTab);
+                                document.getElementById('tab-bar').insertBefore(newTab.element, document.getElementById('new-tab-btn'));
+                            }
+                        });
+                        if (tabs.length > 0) {
+                            activateTab(tabs[0]);
+                            return;
+                        }
+                    }
+                }
+                createNewTab();
+            } catch (e) {
+                console.error('Failed to load tabs from localStorage:', e);
+                createNewTab();
+            }
+        }
+
+        function handleMessage(data) {
+             if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    console.error('Failed to parse message:', e);
+                    return;
+                }
+            }
+            if (data.type === "themeChange" && typeof data.theme === "string") {
+                applyTheme(data.theme);
+            }
+        }
+
+        function setupMessageHandlers() {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.addEventListener('message', event => handleMessage(event.data));
+            }
+            window.addEventListener('message', event => handleMessage(event.data));
+        }
+        
+        require(['vs/editor/editor.main'], function () {
+            
+            updateMonacoTheme();
+            require(['vs/basic-languages/lua/lua'], function () {
+                monaco.languages.registerCompletionItemProvider('lua', {
+                    provideCompletionItems: function (model, position) {
+                        const word = model.getWordUntilPosition(position);
+                        const prefix = word.word.toLowerCase();
+                        const suggestions = [
+                            { label: 'print', kind: monaco.languages.CompletionItemKind.Function, insertText: 'print(${1})', documentation: 'Outputs a message to the console' },
+                            { label: 'printidentity', kind: monaco.languages.CompletionItemKind.Function, insertText: 'printidentity(${1})', documentation: 'Prints identity information' },
+                            { label: 'printidentify', kind: monaco.languages.CompletionItemKind.Function, insertText: 'printidentify(${1})', documentation: 'Identifies and prints details' },
+                            { label: 'executor', kind: monaco.languages.CompletionItemKind.Function, insertText: 'executor(${1})', documentation: 'Executes a command or script' },
+                            { label: 'local', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'local ${1}', documentation: 'Declares a local variable' },
+                            { label: 'function', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'function ${1}()\n\t${2}\nend', documentation: 'Defines a function' },
+                            { label: 'if', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if ${1} then\n\t${2}\nend', documentation: 'Conditional statement' },
+                            { label: 'else', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'else\n\t${1}', documentation: 'Alternative condition' },
+                            { label: 'elseif', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'elseif ${1} then\n\t${2}', documentation: 'Additional condition' },
+                            { label: 'for', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'for ${1} = ${2}, ${3} do\n\t${4}\nend', documentation: 'Loop over a range' },
+                            { label: 'while', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'while ${1} do\n\t${2}\nend', documentation: 'Loop while condition is true' },
+                            { label: 'return', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'return ${1}', documentation: 'Returns a value' },
+                            { label: 'assert', kind: monaco.languages.CompletionItemKind.Function, insertText: 'assert(${1})', documentation: 'Asserts a condition' },
+                            { label: 'dofile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'dofile(${1})', documentation: 'Executes a file' },
+                            { label: 'getmetatable', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getmetatable(${1})', documentation: 'Gets the metatable of an object' },
+                            { label: 'pairs', kind: monaco.languages.CompletionItemKind.Function, insertText: 'pairs(${1})', documentation: 'Iterates over table key-value pairs' },
+                            { label: 'ipairs', kind: monaco.languages.CompletionItemKind.Function, insertText: 'ipairs(${1})', documentation: 'Iterates over table indices' },
+                            { label: 'tonumber', kind: monaco.languages.CompletionItemKind.Function, insertText: 'tonumber(${1})', documentation: 'Converts to a number' },
+                            { label: 'tostring', kind: monaco.languages.CompletionItemKind.Function, insertText: 'tostring(${1})', documentation: 'Converts to a string' },
+                            { label: 'type', kind: monaco.languages.CompletionItemKind.Function, insertText: 'type(${1})', documentation: 'Returns the type of a value' },
+                            { label: 'hookfunction', kind: monaco.languages.CompletionItemKind.Function, insertText: 'hookfunction(${1}, ${2})', documentation: 'Hooks a function' },
+                            { label: 'getgenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getgenv()', documentation: 'Gets global environment' },
+                            { label: 'getrenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getrenv()', documentation: 'Gets Roblox environment' },
+                            { label: 'isexecutorclosure', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isexecutorclosure(${1})', documentation: 'Checks if a function is an executor closure' },
+                            { label: 'setclipboard', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setclipboard(${1})', documentation: 'Sets clipboard content' },
+                            { label: 'cache.invalidate', kind: monaco.languages.CompletionItemKind.Function, insertText: 'cache.invalidate(${1})', documentation: 'Invalidate instance references' },
+                            { label: 'cache.iscached', kind: monaco.languages.CompletionItemKind.Function, insertText: 'cache.iscached(${1})', documentation: 'Check if instance is cached' },
+                            { label: 'cache.replace', kind: monaco.languages.CompletionItemKind.Function, insertText: 'cache.replace(${1}, ${2})', documentation: 'Replace cached instance' },
+                            { label: 'cloneref', kind: monaco.languages.CompletionItemKind.Function, insertText: 'cloneref(${1})', documentation: 'Clone instance reference' },
+                            { label: 'compareinstances', kind: monaco.languages.CompletionItemKind.Function, insertText: 'compareinstances(${1}, ${2})', documentation: 'Compare instance references' },
+                            { label: 'checkcaller', kind: monaco.languages.CompletionItemKind.Function, insertText: 'checkcaller()', documentation: 'Verify executor context' },
+                            { label: 'clonefunction', kind: monaco.languages.CompletionItemKind.Function, insertText: 'clonefunction(${1})', documentation: 'Clone a function' },
+                            { label: 'getcallingscript', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getcallingscript()', documentation: 'Get calling script' },
+                            { label: 'getscriptclosure', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getscriptclosure(${1})', documentation: 'Get module script closure' },
+                            { label: 'iscclosure', kind: monaco.languages.CompletionItemKind.Function, insertText: 'iscclosure(${1})', documentation: 'Check if C closure' },
+                            { label: 'islclosure', kind: monaco.languages.CompletionItemKind.Function, insertText: 'islclosure(${1})', documentation: 'Check if Lua closure' },
+                            { label: 'loadstring', kind: monaco.languages.CompletionItemKind.Function, insertText: 'loadstring(${1})', documentation: 'Load and execute Lua code' },
+                            { label: 'newcclosure', kind: monaco.languages.CompletionItemKind.Function, insertText: 'newcclosure(${1})', documentation: 'Create new C closure' },
+                            { label: 'rconsoleclear', kind: monaco.languages.CompletionItemKind.Function, insertText: 'rconsoleclear()', documentation: 'Clear console' },
+                            { label: 'consoleclear', kind: monaco.languages.CompletionItemKind.Function, insertText: 'consoleclear()', documentation: 'Clear console' },
+                            { label: 'rconsolecreate', kind: monaco.languages.CompletionItemKind.Function, insertText: 'rconsolecreate()', documentation: 'Create console window' },
+                            { label: 'consolecreate', kind: monaco.languages.CompletionItemKind.Function, insertText: 'consolecreate()', documentation: 'Create console window' },
+                            { label: 'rconsoledestroy', kind: monaco.languages.CompletionItemKind.Function, insertText: 'rconsoledestroy()', documentation: 'Destroy console' },
+                            { label: 'consoledestroy', kind: monaco.languages.CompletionItemKind.Function, insertText: 'consoledestroy()', documentation: 'Destroy console' },
+                            { label: 'rconsoleinput', kind: monaco.languages.CompletionItemKind.Function, insertText: 'rconsoleinput()', documentation: 'Get console input' },
+                            { label: 'consoleinput', kind: monaco.languages.CompletionItemKind.Function, insertText: 'consoleinput()', documentation: 'Get console input' },
+                            { label: 'rconsoleprint', kind: monaco.languages.CompletionItemKind.Function, insertText: 'rconsoleprint(${1})', documentation: 'Print to console' },
+                            { label: 'consoleprint', kind: monaco.languages.CompletionItemKind.Function, insertText: 'consoleprint(${1})', documentation: 'Print to console' },
+                            { label: 'rconsolesettitle', kind: monaco.languages.CompletionItemKind.Function, insertText: 'rconsolesettitle(${1})', documentation: 'Set console title' },
+                            { label: 'consolesettitle', kind: monaco.languages.CompletionItemKind.Function, insertText: 'consolesettitle(${1})', documentation: 'Set console title' },
+                            { label: 'crypt.base64encode', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.base64encode(${1})', documentation: 'Encode to Base64' },
+                            { label: 'crypt.base64decode', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.base64decode(${1})', documentation: 'Decode from Base64' },
+                            { label: 'crypt.encrypt', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.encrypt(${1}, ${2})', documentation: 'Encrypt data' },
+                            { label: 'crypt.decrypt', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.decrypt(${1}, ${2})', documentation: 'Decrypt data' },
+                            { label: 'crypt.generatebytes', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.generatebytes(${1})', documentation: 'Generate random bytes' },
+                            { label: 'crypt.generatekey', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.generatekey()', documentation: 'Generate encryption key' },
+                            { label: 'crypt.hash', kind: monaco.languages.CompletionItemKind.Function, insertText: 'crypt.hash(${1}, ${2})', documentation: 'Hash data (supports SHA1, SHA256, SHA384, SHA512, MD5, SHA3-224, SHA3-256, SHA3-512)' },
+                            { label: 'debug.getconstant', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getconstant(${1}, ${2})', documentation: 'Get function constant' },
+                            { label: 'debug.getconstants', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getconstants(${1})', documentation: 'Get all function constants' },
+                            { label: 'debug.getinfo', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getinfo(${1})', documentation: 'Get function information' },
+                            { label: 'debug.getproto', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getproto(${1}, ${2})', documentation: 'Get function prototype' },
+                            { label: 'debug.getprotos', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getprotos(${1})', documentation: 'Get all function prototypes' },
+                            { label: 'debug.getstack', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getstack(${1})', documentation: 'Get stack values' },
+                            { label: 'debug.getupvalue', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getupvalue(${1}, ${2})', documentation: 'Get upvalue' },
+                            { label: 'debug.getupvalues', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.getupvalues(${1})', documentation: 'Get all upvalues' },
+                            { label: 'debug.setconstant', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.setconstant(${1}, ${2}, ${3})', documentation: 'Set function constant' },
+                            { label: 'debug.setstack', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.setstack(${1}, ${2}, ${3})', documentation: 'Set stack value' },
+                            { label: 'debug.setupvalue', kind: monaco.languages.CompletionItemKind.Function, insertText: 'debug.setupvalue(${1}, ${2}, ${3})', documentation: 'Set upvalue' },
+                            { label: 'readfile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'readfile(${1})', documentation: 'Read file contents' },
+                            { label: 'writefile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'writefile(${1}, ${2})', documentation: 'Write to file' },
+                            { label: 'appendfile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'appendfile(${1}, ${2})', documentation: 'Append to file' },
+                            { label: 'loadfile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'loadfile(${1})', documentation: 'Load and execute file' },
+                            { label: 'listfiles', kind: monaco.languages.CompletionItemKind.Function, insertText: 'listfiles(${1})', documentation: 'List directory contents' },
+                            { label: 'makefolder', kind: monaco.languages.CompletionItemKind.Function, insertText: 'makefolder(${1})', documentation: 'Create folder' },
+                            { label: 'delfolder', kind: monaco.languages.CompletionItemKind.Function, insertText: 'delfolder(${1})', documentation: 'Delete folder' },
+                            { label: 'delfile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'delfile(${1})', documentation: 'Delete file' },
+                            { label: 'isfile', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isfile(${1})', documentation: 'Check if path is file' },
+                            { label: 'isfolder', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isfolder(${1})', documentation: 'Check if path is folder' },
+                            { label: 'isrbxactive', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isrbxactive()', documentation: 'Check if Roblox window is active' },
+                            { label: 'isgameactive', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isgameactive()', documentation: 'Check if Roblox window is active' },
+                            { label: 'mouse1click', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mouse1click()', documentation: 'Simulate left mouse click' },
+                            { label: 'mouse1press', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mouse1press()', documentation: 'Press left mouse button' },
+                            { label: 'mouse1release', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mouse1release()', documentation: 'Release left mouse button' },
+                            { label: 'mouse2click', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mouse2click()', documentation: 'Simulate right mouse click' },
+                            { label: 'mouse2press', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mouse2press()', documentation: 'Press right mouse button' },
+                            { label: 'mouse2release', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mouse2release()', documentation: 'Release right mouse button' },
+                            { label: 'mousemoveabs', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mousemoveabs(${1}, ${2})', documentation: 'Move mouse to absolute position' },
+                            { label: 'mousemoverel', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mousemoverel(${1}, ${2})', documentation: 'Move mouse relatively' },
+                            { label: 'mousescroll', kind: monaco.languages.CompletionItemKind.Function, insertText: 'mousescroll(${1})', documentation: 'Simulate mouse scroll' },
+                            { label: 'fireclickdetector', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fireclickdetector(${1})', documentation: 'Fire click detector' },
+                            { label: 'getcallbackvalue', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getcallbackvalue(${1})', documentation: 'Get callback function value' },
+                            { label: 'getconnections', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getconnections(${1})', documentation: 'Get signal connections' },
+                            { label: 'getcustomasset', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getcustomasset(${1})', documentation: 'Get custom asset URL' },
+                            { label: 'gethiddenproperty', kind: monaco.languages.CompletionItemKind.Function, insertText: 'gethiddenproperty(${1}, ${2})', documentation: 'Get hidden property' },
+                            { label: 'sethiddenproperty', kind: monaco.languages.CompletionItemKind.Function, insertText: 'sethiddenproperty(${1}, ${2}, ${3})', documentation: 'Set hidden property' },
+                            { label: 'gethui', kind: monaco.languages.CompletionItemKind.Function, insertText: 'gethui()', documentation: 'Get hidden UI container' },
+                            { label: 'getinstances', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getinstances()', documentation: 'Get all instances' },
+                            { label: 'getnilinstances', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getnilinstances()', documentation: 'Get instances parented to nil' },
+                            { label: 'isscriptable', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isscriptable(${1}, ${2})', documentation: 'Check if property is scriptable' },
+                            { label: 'setscriptable', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setscriptable(${1}, ${2}, ${3})', documentation: 'Set property scriptability' },
+                            { label: 'setrbxclipboard', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setrbxclipboard(${1})', documentation: 'Set Roblox clipboard' },
+                            { label: 'getrawmetatable', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getrawmetatable(${1})', documentation: 'Get raw metatable' },
+                            { label: 'hookmetamethod', kind: monaco.languages.CompletionItemKind.Function, insertText: 'hookmetamethod(${1}, ${2}, ${3})', documentation: 'Hook metamethod' },
+                            { label: 'getnamecallmethod', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getnamecallmethod()', documentation: 'Get namecall method name' },
+                            { label: 'isreadonly', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isreadonly(${1})', documentation: 'Check if table is readonly' },
+                            { label: 'setrawmetatable', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setrawmetatable(${1}, ${2})', documentation: 'Set raw metatable' },
+                            { label: 'setreadonly', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setreadonly(${1}, ${2})', documentation: 'Set table readonly state' },
+                            { label: 'identifyexecutor', kind: monaco.languages.CompletionItemKind.Function, insertText: 'identifyexecutor()', documentation: 'Get executor name and version' },
+                            { label: 'getexecutorname', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getexecutorname()', documentation: 'Get executor name and version' },
+                            { label: 'lz4compress', kind: monaco.languages.CompletionItemKind.Function, insertText: 'lz4compress(${1})', documentation: 'Compress data with LZ4' },
+                            { label: 'lz4decompress', kind: monaco.languages.CompletionItemKind.Function, insertText: 'lz4decompress(${1})', documentation: 'Decompress LZ4 data' },
+                            { label: 'messagebox', kind: monaco.languages.CompletionItemKind.Function, insertText: 'messagebox(${1}, ${2}, ${3})', documentation: 'Show message box' },
+                            { label: 'queue_on_teleport', kind: monaco.languages.CompletionItemKind.Function, insertText: 'queue_on_teleport(${1})', documentation: 'Queue script on teleport' },
+                            { label: 'queueonteleport', kind: monaco.languages.CompletionItemKind.Function, insertText: 'queueonteleport(${1})', documentation: 'Queue script on teleport' },
+                            { label: 'request', kind: monaco.languages.CompletionItemKind.Function, insertText: 'request(${1})', documentation: 'Make HTTP request' },
+                            { label: 'http.request', kind: monaco.languages.CompletionItemKind.Function, insertText: 'http.request(${1})', documentation: 'Make HTTP request' },
+                            { label: 'toclipboard', kind: monaco.languages.CompletionItemKind.Function, insertText: 'toclipboard(${1})', documentation: 'Set system clipboard' },
+                            { label: 'setfpscap', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setfpscap(${1})', documentation: 'Set FPS cap' },
+                            { label: 'getgc', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getgc()', documentation: 'Get garbage collector objects' },
+                            { label: 'getgenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getgenv()', documentation: 'Get global environment' },
+                            { label: 'getloadedmodules', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getloadedmodules()', documentation: 'Get loaded ModuleScripts' },
+                            { label: 'getrenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getrenv()', documentation: 'Get Roblox environment' },
+                            { label: 'getrunningscripts', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getrunningscripts()', documentation: 'Get running scripts' },
+                            { label: 'getscriptbytecode', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getscriptbytecode(${1})', documentation: 'Get script bytecode' },
+                            { label: 'dumpstring', kind: monaco.languages.CompletionItemKind.Function, insertText: 'dumpstring(${1})', documentation: 'Get script bytecode' },
+                            { label: 'getscripthash', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getscripthash(${1})', documentation: 'Get script hash' },
+                            { label: 'getscripts', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getscripts()', documentation: 'Get all scripts' },
+                            { label: 'getsenv', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getsenv(${1})', documentation: 'Get script environment' },
+                            { label: 'getthreadidentity', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getthreadidentity()', documentation: 'Get thread identity level' },
+                            { label: 'getidentity', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getidentity()', documentation: 'Get thread identity level' },
+                            { label: 'setthreadidentity', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setthreadidentity(${1})', documentation: 'Set thread identity level' },
+                            { label: 'setidentity', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setidentity(${1})', documentation: 'Set thread identity level' },
+                            { label: 'Drawing', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'Drawing', documentation: 'Drawing library' },
+                            { label: 'Drawing.new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'Drawing.new(${1})', documentation: 'Create new drawing object' },
+                            { label: 'Drawing.Fonts', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'Drawing.Fonts', documentation: 'Font enumeration' },
+                            { label: 'isrenderobj', kind: monaco.languages.CompletionItemKind.Function, insertText: 'isrenderobj(${1})', documentation: 'Check if render object' },
+                            { label: 'getrenderproperty', kind: monaco.languages.CompletionItemKind.Function, insertText: 'getrenderproperty(${1}, ${2})', documentation: 'Get drawing property' },
+                            { label: 'setrenderproperty', kind: monaco.languages.CompletionItemKind.Function, insertText: 'setrenderproperty(${1}, ${2}, ${3})', documentation: 'Set drawing property' },
+                            { label: 'cleardrawcache', kind: monaco.languages.CompletionItemKind.Function, insertText: 'cleardrawcache()', documentation: 'Clear drawing cache' },
+                            { label: 'WebSocket', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'WebSocket', documentation: 'WebSocket library' },
+                            { label: 'WebSocket.connect', kind: monaco.languages.CompletionItemKind.Function, insertText: 'WebSocket.connect(${1})', documentation: 'Connect to WebSocket' }
+                        ].filter(s => s.label.toLowerCase().startsWith(prefix));
+                        return { suggestions };
+                    },
+                    triggerCharacters: ['.', ':', '"', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+                });
+
+                editor = monaco.editor.create(document.getElementById('container'), {
+                    value: '',
+                    language: 'lua',
+                    theme: 'CustomTheme',
+                    fontSize: 15,
+                    fontFamily: "'Tilt Neon', Consolas, 'Courier New', monospace",
+                    folding: true,
+                    dragAndDrop: true,
+                    links: true,
+                    minimap: { enabled: true },
+                    showFoldingControls: 'always',
+                    smoothScrolling: true,
+                    cursorBlinking: 'smooth',
+                    cursorSmoothCaretAnimation: 'on',
+                    foldingHighlight: true,
+                    fontLigatures: true,
+                    formatOnPaste: true,
+                    showDeprecated: true,
+                    suggest: { snippetsPreventQuickSuggestions: false },
+                    padding: { top: 5, left: 0 },
+                    lineNumbers: 'on',
+                    lineNumbersMinChars: 3,
+                    scrollBeyondLastLine: false
+                });
+
+                editor.getModel().updateOptions({ insertSpaces: false });
+                editor.onDidChangeModelContent(() => {
+                    if (activeTab) {
+                        activeTab.content = editor.getValue();
+                        saveTabsToLocalStorage();
+                    }
+                });
+
+                document.getElementById('new-tab-btn').addEventListener('click', createNewTab);
+                loadTabsFromLocalStorage();
+
+                window.onresize = function () {
+                    editor.layout();
+                };
+
+                window.GetText = function () {
+                    return editor.getValue();
+                };
+
+                window.SetText = function (x) {
+                    editor.setValue(String(x));
+                    if (activeTab) {
+                        activeTab.content = editor.getValue();
+                        saveTabsToLocalStorage();
+                    }
+                };
+
+                window.SetMinimap = function (x) {
+                    editor.updateOptions({ minimap: { enabled: Boolean(x) } });
+                };
+            });
+
+            window.addEventListener('load', () => {
+                setupMessageHandlers();
+                setTimeout(() => showToast('Lightning loaded!', 'success'), 1500);
+            });
+        });
+    </script>
+</body>
+</html>
